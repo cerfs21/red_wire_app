@@ -1,9 +1,6 @@
-# red_wire_app v0.4
-#   Updates from v0.3:
-#       - Update pictures, colors and layout
-#       - Activate debug mode
-#       - Correct typos
-#       - Update collection of user input in main callback
+# red_wire_app v0.5
+#   Updates from v0.4:
+#       - Fix main callback
 
 
 #################
@@ -461,7 +458,7 @@ def enter_id_callback(name, active_tab, n_clicks):
 
     State(component_id="tabs", component_property="active_tab"),
 
-    Input(component_id="predict-button", component_property="n_clicks")],
+    Input(component_id="predict-button", component_property="n_clicks"),
 )
 def get_result_callback(start_date, end_date, input_values, active_tab, n_clicks):
     if PRINT_to_LOG:
