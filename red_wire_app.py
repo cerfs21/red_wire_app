@@ -1,5 +1,9 @@
-# red_wire_app v0.3
-#   Initial test version
+# red_wire_app v0.4
+#   Updates from v0.3:
+#       - Update pictures, colors and layout
+#       - Activate debug mode
+#       - Correct typos
+#       - Update collection of user input in main callback
 
 
 #################
@@ -87,8 +91,8 @@ logo_and_title = dbc.Row(
         ),
         dbc.Col(
             [
-                html.H1("Red Wire App.", style={"color": "red"}),
-                html.H4("Prédictions de consommation électrique en Espagne", style={"color": "red"}),
+                html.H2("Red Wire App.", style={"color": "red"}),
+                html.H5("Prédictions de consommation électrique en Espagne", style={"color": "red"}),
             ],
             width=8,
             className="text-center",
@@ -172,7 +176,7 @@ tabs = dbc.Tabs([
             dbc.Row(
                 [
                     dbc.Col(
-                        html.H5("Consultez des données obervées ou obtenez des prédictions de la consommation\
+                        html.H5("Consultez des données ou obtenez des prédictions de la consommation\
                                 électrique en Espagne en sélectionnant une période passée ou future."),
                         style={'text-align': 'justify'}
                     )
@@ -185,7 +189,7 @@ tabs = dbc.Tabs([
                         dbc.Card([
                             dbc.CardHeader(
                                 html.H5(f"Grâce à cette application vous pourrez..."),
-                                style={"color": "blue"},
+                                style={"color": "red"},
                                 className="text-left pt-3"),
                         dbc.CardBody([
                             dcc.Markdown('''
@@ -220,7 +224,7 @@ tabs = dbc.Tabs([
                         dbc.Card([
                             dbc.CardHeader(
                                 html.H5("Connectez vous pour commencer l'expérience",
-                                    style={"color": "blue"},
+                                    style={"color": "red"},
                                     className="text-left pt-1")
                             ),
                             dbc.CardBody([
@@ -255,7 +259,7 @@ tabs = dbc.Tabs([
                     dbc.Col(dbc.Card([
                         dbc.CardHeader(
                             html.H5(id="welcome-box1"),
-                            style={"color": "blue"},
+                            style={"color": "red"},
                             className="card-title text-left pt-3",
                         ),
                         dbc.CardBody(
@@ -286,7 +290,7 @@ tabs = dbc.Tabs([
                 [
                     html.H5(
                         "Sélectionnez une date de début et de fin de période.",
-                        style={"color": "blue"},
+                        style={"color": "red"},
                         className="mb-4"),
                 ]
                 # Prefined formular for user input
@@ -308,7 +312,7 @@ tabs = dbc.Tabs([
                         dbc.Card([
                             dbc.CardHeader(
                                 html.H5(f"Valeurs courantes et prédictions"),
-                                style={"color": "blue"},
+                                style={"color": "red"},
                                 className="text-center pt-3"),
                             dbc.CardBody(id="prediction-card")
                         ]),
@@ -318,7 +322,7 @@ tabs = dbc.Tabs([
                         dbc.Card([
                             dbc.CardHeader(
                                 html.H5(f"Comparaison graphique"),
-                                style={"color": "blue"},
+                                style={"color": "red"},
                                 className="text-center pt-3"),
                             dbc.CardBody(dcc.Graph(id="prediction-graph")),
                         ]),
@@ -375,7 +379,7 @@ app.layout = dbc.Container([
             # Right half of the screen = 2nd Col showing image
             dbc.Col(
                 html.Img(
-                    src=dash.get_asset_url("solar_panels_on_ground.webp"),
+                    src=dash.get_asset_url("led-buld.jpg"),
                     style={'width': '80%'},
                     # Picture shown on large and extra-large displays only
                     className="d-sm-none d-lg-block mt-4 mb-4",
@@ -384,7 +388,7 @@ app.layout = dbc.Container([
                 sm=0,
                 # 6/12 = half of screen on large and extra-large displays
                 lg=6,
-                style={'background-image': 'url(/assets/rectangle_blue_bubbles.webp)'},
+                style={'background-image': 'url(/assets/red-wire.jpg)'},
                 className="d-flex align-items-center",
             ),
         ],
@@ -430,6 +434,7 @@ def button_to_next_tab(active_tab, *args):
 
     # Collect user identification
     State(component_id="name-box", component_property="value"),
+
     State(component_id="tabs", component_property="active_tab"),
 
     Input(component_id="connect-button", component_property="n_clicks"),
@@ -451,7 +456,7 @@ def enter_id_callback(name, active_tab, n_clicks):
     Output(component_id="alert-1", component_property="is_open"),
 
     # Collect start and end dates
-    inputs=[State(component_id=input_ids[0], component_property="value"),
+    State(component_id=input_ids[0], component_property="value"),
     State(component_id=input_ids[1], component_property="value"),
 
     State(component_id="tabs", component_property="active_tab"),
@@ -521,4 +526,4 @@ def get_result_callback(start_date, end_date, input_values, active_tab, n_clicks
 # Hook for wsgi
 server = app.server
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
