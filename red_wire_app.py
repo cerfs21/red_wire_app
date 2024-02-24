@@ -1,6 +1,16 @@
-# red_wire_app v0.5
-#   Updates from v0.4:
-#       - Fix main callback
+# red_wire_app v0.6
+#   Updates from v0.5:
+#       - Create and use custom.css to control button colors
+#       - Remove character encoding and set delimiter to ';' in pd.read_csv
+#       - Update images
+#       - Deactivate Dash debug mode
+#       - Update and activate console output (PRINT_to_LOG flag)
+#       - Update text in Welcome tab
+#       - Change font size in various places
+#       - Change font color to red in various places
+#       - Fix input type for date selection (was number, now text)
+#       - Fix input management in get_result_callback
+#       - Rename some variables
 
 
 #################
@@ -25,7 +35,7 @@ from visualize import make_figure_from_prediction
 # Set application path and load data(sub)set
 app_path = '/var/www/red-wire/'
 file_path = 'data/REE_data.csv'
-data_df = pd.read_csv(app_path+file_path, encoding = "ISO-8859-1")
+data_df = pd.read_csv(app_path+file_path, delimiter=';')
 
 
 ############################
@@ -38,7 +48,7 @@ input_ids =     ['start', 'end']
 # 2) List of model inputs translated in the language of the application interface
 input_labels =  ["Début de période", "Fin de période"]
 # 3) List of short descriptions of model inputs
-input_notes =   ["choisissez la date de début", "choisissez la date de fin"]
+input_notes =   ["saisissez une date au format AAAA-MM-JJ", "saisissez une date au format AAAA-MM-JJ"]
 
 
 # The code below manages the user interface using Dash tabs and callbacks
@@ -89,7 +99,7 @@ logo_and_title = dbc.Row(
         dbc.Col(
             [
                 html.H2("Red Wire App.", style={"color": "red"}),
-                html.H5("Prédictions de consommation électrique en Espagne", style={"color": "red"}),
+                html.H5("Prédictions de consommation électrique", style={"color": "red"}),
             ],
             width=8,
             className="text-center",
@@ -110,19 +120,19 @@ home_button = dbc.Row(
 # Buttons on first 4 tabs, allowing to get to the next tab up to the 5th and last tab
 buttons = [
     # Button to get from Home tab to Connection tab
-    dbc.Button("Commencer", id="start-button"),
+    dbc.Button("Commencer", id="start-button", className="red-button"),
 
     # Button to get from Connection tab to Welcome tab
-    dbc.Button("Se connecter", id="connect-button"),
+    dbc.Button("Se connecter", id="connect-button", className="red-button"),
 
     # Button to get from Welcome tab to Parameters tab
-    dbc.Button("Lancer l'application", id="launch-button"),
+    dbc.Button("Lancer l'application", id="launch-button", className="red-button"),
 
     # Button to get from Parameters tab to Result tab
-    dbc.Button("Obtenir une prédiction", id="predict-button"),
+    dbc.Button("Obtenir une prédiction", id="predict-button", className="red-button"),
 
     # Button to get back to Parameters tab from Result tab
-    dbc.Button("Modifier les paramètres", id="param-button"),
+    dbc.Button("Modifier les paramètres", id="param-button", className="red-button"),
 ]
 
 # Web formular for user input
@@ -134,7 +144,7 @@ for i in range(0, len(input_ids)):
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(input_labels[i]),
-                        dbc.Input(id=input_ids[i], placeholder=input_notes[i], type="number"),
+                        dbc.Input(id=input_ids[i], placeholder=input_notes[i], type="text"),
                         dbc.Alert("Veuillez entrer une valeur.", color="danger", fade=True, is_open=False, id="alert-"+str(i)),
                     ]
                 )
@@ -163,7 +173,7 @@ HIDE_TABS = True
 HIDE_HOME_BUTTON = False
 
 # Debug flag to control console output
-PRINT_to_LOG = False
+PRINT_to_LOG = True
 
 # Define Dash tabs
 tabs = dbc.Tabs([
@@ -173,9 +183,9 @@ tabs = dbc.Tabs([
             dbc.Row(
                 [
                     dbc.Col(
-                        html.H5("Consultez des données ou obtenez des prédictions de la consommation\
-                                électrique en Espagne en sélectionnant une période passée ou future."),
-                        style={'text-align': 'justify'}
+                        html.H5("Consultez des données ou obtenez des prédictions de\
+                                consommation en sélectionnant une période passée ou future."),
+                        style={'text-align': 'justify', 'color': 'red'}
                     )
                 ],
                 className="mt-4 mb-5",
@@ -186,13 +196,15 @@ tabs = dbc.Tabs([
                         dbc.Card([
                             dbc.CardHeader(
                                 html.H5(f"Grâce à cette application vous pourrez..."),
-                                style={"color": "red"},
+                                style={'color': 'red'},
                                 className="text-left pt-3"),
                         dbc.CardBody([
-                            dcc.Markdown('''
-                                + Consulter des données sur la consommation électrique en Espagne jusqu'à J-1
-                                + Obtenir des prédictions de consommation électrique totale.
+                            html.P(
+                                dcc.Markdown('''
+                                + Consulter des données sur la consommation jusqu'à J-1,
+                                + Obtenir des prédictions de consommation électrique.
                             '''),
+                            style={'color': 'red'},)
                         ],
                         style={'fontSize': '1.2em', 'font-weight': '500', 'margin-left': '-0.6em', 'padding-top': '1.2em'},
                         className="text-left",
@@ -227,7 +239,7 @@ tabs = dbc.Tabs([
                             dbc.CardBody([
                                 html.P(
                                     [
-                                        dbc.Input(id="name-box", placeholder="Entrez votre nom"),
+                                        dbc.Input(id="name-box", placeholder="Saisissez votre nom"),
                                     ],
                                     className="mt-2 mb-2"
                                 ),
@@ -376,8 +388,9 @@ app.layout = dbc.Container([
             # Right half of the screen = 2nd Col showing image
             dbc.Col(
                 html.Img(
-                    src=dash.get_asset_url("led-buld.jpg"),
-                    style={'width': '80%'},
+                    #src=dash.get_asset_url("solar_panels_on_ground.webp"),
+                    src=dash.get_asset_url("red-wire.png"),
+                    style={'width': '100%'},
                     # Picture shown on large and extra-large displays only
                     className="d-sm-none d-lg-block mt-4 mb-4",
                 ),
@@ -385,8 +398,8 @@ app.layout = dbc.Container([
                 sm=0,
                 # 6/12 = half of screen on large and extra-large displays
                 lg=6,
-                style={'background-image': 'url(/assets/red-wire.jpg)'},
-                className="d-flex align-items-center",
+                style={'width': '20%'},
+                className="d-flex align-items-right",
             ),
         ],
         className="mt-4"
@@ -453,52 +466,51 @@ def enter_id_callback(name, active_tab, n_clicks):
     Output(component_id="alert-1", component_property="is_open"),
 
     # Collect start and end dates
-    State(component_id=input_ids[0], component_property="value"),
-    State(component_id=input_ids[1], component_property="value"),
+    inputs=[(State(component_id=input_ids[0], component_property="value"),
+    State(component_id=input_ids[1], component_property="value")),
 
     State(component_id="tabs", component_property="active_tab"),
 
-    Input(component_id="predict-button", component_property="n_clicks"),
+    Input(component_id="predict-button", component_property="n_clicks")],
 )
-def get_result_callback(start_date, end_date, input_values, active_tab, n_clicks):
+def get_result_callback(input_values, active_tab, n_clicks):
     if PRINT_to_LOG:
         print("******************************")
-        print("Date de début :", start_date)
-        print("Date de fin :", end_date)
+        print("Date de début :", input_values[0])
+        print("Date de fin :", input_values[1])
 
     # Trigger a warning for blank state, county or FIPS
-    invalid_start = (start_date == None)
-    invalid_end = (end_date == None)
+    invalid_start = (input_values[0] == None)
+    invalid_end = (input_values[1] == None)
     if invalid_start or invalid_end:
-        return no_update, no_update, invalid_start, invalid_end
+        return no_update, no_update, no_update, invalid_start, invalid_end
+
+    input_values[0]+="T00:00:00.000+01:00"
+    actual_val=data_df.loc[data_df["datetime"]==input_values[0], "demand"].values[0]
+    prediction = load_model_and_predict(app_path+'data/Red_Wire_model', input_values, input_ids)
 
     if PRINT_to_LOG:
-        print("Valeurs retenues :", input_values)
-    current_val = data_df[data_df["datetime"]==start_date]["demand"].values[0]
-    prediction = load_model_and_predict(app_path+'data/Deep_Solar_model', input_values, input_ids)
-
-    if PRINT_to_LOG:
-        print("******************************")
+        print("********************")
         print("Inputs du CallBack :", dash.callback_context.states)
-        print("******************************")
-        print("Consommation observée en MW :", current_val)
+        print("********************")
+        print("Consommation observée en MW :", actual_val)
         print("Consommation prédite en MW :", prediction)
 
     prediction_element = [
             dbc.Row(
                 [
-                    html.P(f"Surface totale actuelle (base installée) : {current_val} m²"),
-                    html.P(f"Surface totale modélisée (prédiction) : {prediction} m²")
+                    html.P(f"Consommation observée en MW : {actual_val}"),
+                    html.P(f"Consommation prédite en MW : {prediction}")
                 ],
             className="text-center",
             )
     ]
 
     # Build conclusion depending on predicted value < or > installed base
-    if prediction-current_val >0:
+    if prediction - actual_val > 0:
         conclusion_element = [
             dbc.Row(
-                html.H4(f"La prédiction dépasse la valeur observée de {prediction-current_val} MW."),
+                html.H4(f"La prédiction dépasse la valeur observée de {prediction-actual_val} MW."),
                 style={"color": "darkorange"},
                 className="text-center",
             )
@@ -506,16 +518,16 @@ def get_result_callback(start_date, end_date, input_values, active_tab, n_clicks
     else:
         conclusion_element = [
             dbc.Row(
-                html.H4(f"La prédiction est inférieure de {current_val-prediction} MW par rapport à la valeur observée."),
+                html.H4(f"La prédiction est inférieure de {actual_val-prediction} MW à la valeur observée."),
                 style={"color": "darkorange"},
                 className="text-center",
             )
         ]
 
     prediction_text = prediction_element + conclusion_element
-    prediction_figure = make_figure_from_prediction(current_val, prediction)
+    prediction_figure = make_figure_from_prediction(actual_val, prediction)
 
-    return prediction_text, prediction_figure, get_next_tab(active_tab), False, False, False
+    return prediction_text, prediction_figure, get_next_tab(active_tab), False, False
 
 # End of code managing the user interface using Dash tabs and callbacks
 
@@ -523,4 +535,4 @@ def get_result_callback(start_date, end_date, input_values, active_tab, n_clicks
 # Hook for wsgi
 server = app.server
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)
