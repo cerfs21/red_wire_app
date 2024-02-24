@@ -1,0 +1,5 @@
+/* custom.css */
+.red-button {
+    background-color: red !important;
+    color: white !important; /* Text color */
+}
