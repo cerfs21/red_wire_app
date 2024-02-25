@@ -1,16 +1,7 @@
-# red_wire_app v0.6
-#   Updates from v0.5:
-#       - Create and use custom.css to control button colors
-#       - Remove character encoding and set delimiter to ';' in pd.read_csv
-#       - Update images
-#       - Deactivate Dash debug mode
-#       - Update and activate console output (PRINT_to_LOG flag)
-#       - Update text in Welcome tab
-#       - Change font size in various places
-#       - Change font color to red in various places
-#       - Fix input type for date selection (was number, now text)
-#       - Fix input management in get_result_callback
-#       - Rename some variables
+# red_wire_app v0.7
+#   Updates from v0.6:
+#       - Update text in Welcome and Result tabs
+#       - Change input type (was text, now date) and removed placeholder for dates in Parameters tab
 
 
 #################
@@ -48,7 +39,7 @@ input_ids =     ['start', 'end']
 # 2) List of model inputs translated in the language of the application interface
 input_labels =  ["Début de période", "Fin de période"]
 # 3) List of short descriptions of model inputs
-input_notes =   ["saisissez une date au format AAAA-MM-JJ", "saisissez une date au format AAAA-MM-JJ"]
+input_notes =   ["Saisissez une date au format AAAA-MM-JJ", "Saisissez une date au format AAAA-MM-JJ"]
 
 
 # The code below manages the user interface using Dash tabs and callbacks
@@ -144,7 +135,7 @@ for i in range(0, len(input_ids)):
                 dbc.InputGroup(
                     [
                         dbc.InputGroupText(input_labels[i]),
-                        dbc.Input(id=input_ids[i], placeholder=input_notes[i], type="text"),
+                        dbc.Input(id=input_ids[i], type="date"),
                         dbc.Alert("Veuillez entrer une valeur.", color="danger", fade=True, is_open=False, id="alert-"+str(i)),
                     ]
                 )
@@ -183,8 +174,7 @@ tabs = dbc.Tabs([
             dbc.Row(
                 [
                     dbc.Col(
-                        html.H5("Consultez des données ou obtenez des prédictions de\
-                                consommation en sélectionnant une période passée ou future."),
+                        html.H5("Consultez des données ou obtenez des prédictions en sélectionnant une période passée ou future."),
                         style={'text-align': 'justify', 'color': 'red'}
                     )
                 ],
@@ -201,8 +191,9 @@ tabs = dbc.Tabs([
                         dbc.CardBody([
                             html.P(
                                 dcc.Markdown('''
-                                + Consulter des données sur la consommation jusqu'à J-1,
-                                + Obtenir des prédictions de consommation électrique.
+                                + Consulter des données sur la consommation électrique horaire en Espagne du 1er janvier 2014 \
+                                jusqu'à aujourd'hui,
+                                + Obtenir des prédictions de consommation électrique horaire et les comparer aux données observées.
                             '''),
                             style={'color': 'red'},)
                         ],
@@ -518,7 +509,7 @@ def get_result_callback(input_values, active_tab, n_clicks):
     else:
         conclusion_element = [
             dbc.Row(
-                html.H4(f"La prédiction est inférieure de {actual_val-prediction} MW à la valeur observée."),
+                html.H4(f"La prédiction est inférieure de {actual_val-prediction} MW par rapport à la valeur observée."),
                 style={"color": "darkorange"},
                 className="text-center",
             )
@@ -535,4 +526,4 @@ def get_result_callback(input_values, active_tab, n_clicks):
 # Hook for wsgi
 server = app.server
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
