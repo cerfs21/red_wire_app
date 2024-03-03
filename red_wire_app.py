@@ -1,7 +1,11 @@
-# red_wire_app v0.7
-#   Updates from v0.6:
-#       - Update text in Welcome and Result tabs
-#       - Change input type (was text, now date) and removed placeholder for dates in Parameters tab
+# red_wire_app v0.8
+#   Updates from v0.7:
+#       - Group flags at the beginning of the code
+#       - Update comments
+#       - Update code for new content and headers of data file
+#       - Add import load_data from predict
+#       - Much code commented for test purposes
+#       - Add code to draw a graph with values from aggregated data file
 
 
 #################
@@ -11,6 +15,7 @@
 # Import Python librairies
 import numpy as np
 import pandas as pd
+from datetime import datetime as dt
 
 import dash
 import dash_bootstrap_components as dbc
@@ -19,14 +24,29 @@ from dash.dash import no_update
 from dash_extensions.enrich import Output, DashProxy, Input, State, MultiplexerTransform
 from dash.exceptions import PreventUpdate
 
-from predict import load_model_and_predict
+from predict import load_model_and_predict, load_data
 from connect import create_session, get_last_connection_date, register_new_connection
 from visualize import make_figure_from_prediction
 
 # Set application path and load data(sub)set
 app_path = '/var/www/red-wire/'
-file_path = 'data/REE_data.csv'
-data_df = pd.read_csv(app_path+file_path, delimiter=';')
+file_path = 'data/REE_data_aggregated_by_10mn.csv'
+data_df = pd.read_csv(app_path+file_path, delimiter=',')
+
+
+#############
+# Set flags #
+#############
+
+# Dash debug flag
+DASH_DEBUG = True
+
+# Dash parameters to control displaying tabs and home button
+HIDE_TABS = True
+HIDE_HOME_BUTTON = False
+
+# Flag to control console output
+CONSOLE_OUTPUT = True
 
 
 ############################
@@ -158,13 +178,6 @@ def get_next_tab(active_tab):
 #####################
 # Declare Dash tabs #
 #####################
-
-# Dash parameters to control displaying tabs and home button
-HIDE_TABS = True
-HIDE_HOME_BUTTON = False
-
-# Debug flag to control console output
-PRINT_to_LOG = True
 
 # Define Dash tabs
 tabs = dbc.Tabs([
@@ -308,16 +321,16 @@ tabs = dbc.Tabs([
         [
             dbc.Row(
                 [
-                    dbc.Col(
-                        dbc.Card([
-                            dbc.CardHeader(
-                                html.H5(f"Valeurs courantes et prédictions"),
-                                style={"color": "red"},
-                                className="text-center pt-3"),
-                            dbc.CardBody(id="prediction-card")
-                        ]),
-                        className="mb-2",
-                    ),
+                    # dbc.Col(
+                    #     dbc.Card([
+                    #         dbc.CardHeader(
+                    #             html.H5(f"Valeurs courantes et prédictions"),
+                    #             style={"color": "red"},
+                    #             className="text-center pt-3"),
+                    #         dbc.CardBody(id="prediction-card")
+                    #     ]),
+                    #     className="mb-2",
+                    # ),
                     dbc.Col(
                         dbc.Card([
                             dbc.CardHeader(
@@ -450,7 +463,7 @@ def enter_id_callback(name, active_tab, n_clicks):
 
 # Main callback to collect model input parameters, launch model prediction and trigger Result tab
 @app.callback(
-    Output(component_id="prediction-card", component_property="children"),
+    # Output(component_id="prediction-card", component_property="children"),
     Output(component_id="prediction-graph", component_property="figure"),
     Output(component_id="tabs", component_property="active_tab"),
     Output(component_id="alert-0", component_property="is_open"),
@@ -465,65 +478,73 @@ def enter_id_callback(name, active_tab, n_clicks):
     Input(component_id="predict-button", component_property="n_clicks")],
 )
 def get_result_callback(input_values, active_tab, n_clicks):
-    if PRINT_to_LOG:
+    if CONSOLE_OUTPUT:
         print("******************************")
         print("Date de début :", input_values[0])
         print("Date de fin :", input_values[1])
 
-    # Trigger a warning for blank state, county or FIPS
+    # Trigger a warning for blank user input
     invalid_start = (input_values[0] == None)
     invalid_end = (input_values[1] == None)
     if invalid_start or invalid_end:
         return no_update, no_update, no_update, invalid_start, invalid_end
 
-    input_values[0]+="T00:00:00.000+01:00"
-    actual_val=data_df.loc[data_df["datetime"]==input_values[0], "demand"].values[0]
-    prediction = load_model_and_predict(app_path+'data/Red_Wire_model', input_values, input_ids)
+    input_values[0]+=" 00:00:00"
+    input_values[1]+=" 23:59:59"
+    start_date = dt.strptime(input_values[0], '%Y-%m-%d %H:%M:%S')
+    end_date = dt.strptime(input_values[1], '%Y-%m-%d %H:%M:%S')
+    data_df['datetime_utc'] = pd.to_datetime(data_df['datetime_utc'])
+    mask = (data_df['datetime_utc'] >= start_date) & (data_df['datetime_utc'] <= end_date)
+    figure_df = data_df.loc[mask]
+    # actual_val=data_df.loc[data_df["datetime_utc"]==input_values[0], "demanda"].values[0]
+    # prediction = load_model_and_predict(app_path+'data/Red_Wire_model', input_values, input_ids)
 
-    if PRINT_to_LOG:
-        print("********************")
-        print("Inputs du CallBack :", dash.callback_context.states)
-        print("********************")
-        print("Consommation observée en MW :", actual_val)
-        print("Consommation prédite en MW :", prediction)
+    # if CONSOLE_OUTPUT:
+    #     print("********************")
+    #     print("Inputs du CallBack :", dash.callback_context.states)
+    #     print("********************")
+    #     print("Consommation observée en MW :", actual_val)
+    #     print("Consommation prédite en MW :", prediction)
 
-    prediction_element = [
-            dbc.Row(
-                [
-                    html.P(f"Consommation observée en MW : {actual_val}"),
-                    html.P(f"Consommation prédite en MW : {prediction}")
-                ],
-            className="text-center",
-            )
-    ]
+    # prediction_element = [
+    #         dbc.Row(
+    #             [
+    #                 html.P(f"Consommation observée en MW : {actual_val}"),
+    #                 html.P(f"Consommation prédite en MW : {prediction}")
+    #             ],
+    #         className="text-center",
+    #         )
+    # ]
 
-    # Build conclusion depending on predicted value < or > installed base
-    if prediction - actual_val > 0:
-        conclusion_element = [
-            dbc.Row(
-                html.H4(f"La prédiction dépasse la valeur observée de {prediction-actual_val} MW."),
-                style={"color": "darkorange"},
-                className="text-center",
-            )
-        ]
-    else:
-        conclusion_element = [
-            dbc.Row(
-                html.H4(f"La prédiction est inférieure de {actual_val-prediction} MW par rapport à la valeur observée."),
-                style={"color": "darkorange"},
-                className="text-center",
-            )
-        ]
+    # # Build conclusion depending on predicted value < or > installed base
+    # if prediction - actual_val > 0:
+    #     conclusion_element = [
+    #         dbc.Row(
+    #             html.H4(f"La prédiction dépasse la valeur observée de {prediction-actual_val} MW."),
+    #             style={"color": "darkorange"},
+    #             className="text-center",
+    #         )
+    #     ]
+    # else:
+    #     conclusion_element = [
+    #         dbc.Row(
+    #             html.H4(f"La prédiction est inférieure de {actual_val-prediction} MW par rapport à la valeur observée."),
+    #             style={"color": "darkorange"},
+    #             className="text-center",
+    #         )
+    #     ]
 
-    prediction_text = prediction_element + conclusion_element
-    prediction_figure = make_figure_from_prediction(actual_val, prediction)
+    # prediction_text = prediction_element + conclusion_element
+    # prediction_figure = make_figure_from_prediction(actual_val, prediction)
+    prediction_figure = make_figure_from_prediction(figure_df)
 
-    return prediction_text, prediction_figure, get_next_tab(active_tab), False, False
+    # return prediction_text, prediction_figure, get_next_tab(active_tab), False, False
+    return prediction_figure, get_next_tab(active_tab), False, False
 
 # End of code managing the user interface using Dash tabs and callbacks
 
 
-# Hook for wsgi
+# Hook for WSGI (Web Server Gateway Interface)
 server = app.server
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=DASH_DEBUG)

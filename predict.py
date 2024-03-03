@@ -1,5 +1,5 @@
-# predict v0.2:
-#   Added some debug code to check the model and the input data
+# predict v0.3:
+# Much code commented for test purposes
 
 import pickle
 import pandas as pd
@@ -10,6 +10,11 @@ def load_model(path):
         model = pickle.load(file)
     return model
 
+def load_data(path, dates):
+#     data_df = pd.read_csv('data/REE_data_aggregated_by_10mn.csv')
+#     data = data_df.loc[data_df["datetime_utc"]==input_values[0], "demanda"].values[0]
+    data = 15000
+    return data
 
 def get_prediction(model, cust_input, input_ids):
     # input_df = pd.DataFrame(cust_input).transpose()
