@@ -1,15 +1,23 @@
-# data_update v1.0
+# daily_update v1.1
+#   Updates from v1.0:
+#   - Update comments
+#   - Add imports
+#   - Add managing time lag
 
 # Import librairies
 from utils import API_request, aggreg_to_utc_duration, moment
 import pandas as pd
 import csv
+from datetime import datetime as dt
+import pytz
 
 # Import constants
 from utils import URL
 
-start_date = moment('yesterday', 'AM')
-end_date = moment('yesterday', 'PM')
+
+lag = dt.now().astimezone(pytz.timezone('Europe/Madrid')).utcoffset()
+start_date = moment('yesterday', 'AM')+lag
+end_date = moment('yesterday', 'PM')+lag
 print(start_date)
 print(end_date)
 
@@ -45,5 +53,5 @@ for duration in ['10mn', '1h', '1d']:
     file_path = f'data/REE_data_aggregated_by_{duration}.csv'
     df_duration = aggreg_to_utc_duration(df, duration)
     print(df_duration.head())
-    # Write dataframe with reformatted data to destination CSV file
+    # Append dataframe with reformatted data to destination CSV file
     df_duration.to_csv(file_path, header=False, index=False, mode='a', sep=',')

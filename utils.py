@@ -1,9 +1,7 @@
-# utils v1.1
+# utils v1.2
 # Common functions for processing REE data
-#   Updates from v1.0:
-#   - Add moment function
-#   - Move URL constant from monthly_data_import_w.API_batch to here
-#   - Remove time zone and thousandths of seconds in UTC converted datetime
+#   Updates from v1.1:
+#   - Update comments
 
 
 # Import librairies
@@ -18,7 +16,7 @@ import requests
 URL = 'https://apidatos.ree.es/es/datos/demanda/demanda-tiempo-real?'
 
 
-# Define of a function to convert user defined half_day to a datetime object
+# Define of a function to convert user defined day and half_day to a datetime object
 def moment(day, half_day):
     '''
     Input: day and hour as strings
