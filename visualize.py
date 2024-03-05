@@ -1,5 +1,6 @@
-# visualize v0.2:
-#   Initial version for test purposes
+# visualize v0.3:
+#   Edit first axis title to mention the MW unit
+#   Remove second and third axis titles
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -19,11 +20,11 @@ def make_figure_from_prediction(figure_df):
 
     # Create layout with 3 y-axes corresponding to the 3 value columns
     fig.update_layout(
-        yaxis=dict(title='Consommation'),
-        yaxis2=dict(title='Planification', overlaying='y', side='right'),
-        yaxis3=dict(title='Prédiction', overlaying='y', side='right', anchor='free', position=0.85),
+        yaxis=dict(title='Consommation en MW'),
+        yaxis2=dict(overlaying='y', side='right'),
+        yaxis3=dict(overlaying='y', side='right'),
         xaxis=dict(title='Date'),
-        title='Comparaison des valeurs de consommation, planification et prédiction',
+        #title='Comparaison des valeurs de consommation, planification et prédiction',
     )
 
     return fig
