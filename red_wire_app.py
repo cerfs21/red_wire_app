@@ -1,11 +1,9 @@
-# red_wire_app v0.8
-#   Updates from v0.7:
-#       - Group flags at the beginning of the code
-#       - Update comments
-#       - Update code for new content and headers of data file
-#       - Add import load_data from predict
-#       - Much code commented for test purposes
-#       - Add code to draw a graph with values from aggregated data file
+# red_wire_app v0.9
+#   Updates from v0.8:
+#       - Update text on Welcome and Results tabs
+#       - Increase width of left side of global page layout
+#       - Update comments accordingly
+#       - Number of Apache threads increased from 10 to 30 (in apache2/sites_available)
 
 
 #################
@@ -187,7 +185,7 @@ tabs = dbc.Tabs([
             dbc.Row(
                 [
                     dbc.Col(
-                        html.H5("Consultez des données ou obtenez des prédictions en sélectionnant une période passée ou future."),
+                        html.H5("Consultez des données et obtenez des prédictions en sélectionnant une période d'observation."),
                         style={'text-align': 'justify', 'color': 'red'}
                     )
                 ],
@@ -205,8 +203,8 @@ tabs = dbc.Tabs([
                             html.P(
                                 dcc.Markdown('''
                                 + Consulter des données sur la consommation électrique horaire en Espagne du 1er janvier 2014 \
-                                jusqu'à aujourd'hui,
-                                + Obtenir des prédictions de consommation électrique horaire et les comparer aux données observées.
+                                à J-1,
+                                + Obtenir des prédictions de consommation électrique et les comparer aux données observées.
                             '''),
                             style={'color': 'red'},)
                         ],
@@ -302,7 +300,7 @@ tabs = dbc.Tabs([
             dbc.Form(
                 [
                     html.H5(
-                        "Sélectionnez une date de début et de fin de période.",
+                        "Sélectionnez une date de début et une date de fin de période.",
                         style={"color": "red"},
                         className="mb-4"),
                 ]
@@ -334,7 +332,7 @@ tabs = dbc.Tabs([
                     dbc.Col(
                         dbc.Card([
                             dbc.CardHeader(
-                                html.H5(f"Comparaison graphique"),
+                                html.H5(f"Comparaison graphique des valeurs de consommation, planification et prédiction"),
                                 style={"color": "red"},
                                 className="text-center pt-3"),
                             dbc.CardBody(dcc.Graph(id="prediction-graph")),
@@ -385,8 +383,8 @@ app.layout = dbc.Container([
                 ],
                 # 12/12 = full screen on small and medium displays
                 sm=12,
-                # 6/12 = half of screen on large and extra-large displays
-                lg=6,
+                # 9/12 = three quarters of screen on large and extra-large displays
+                lg=9,
             ),
 
             # Right half of the screen = 2nd Col showing image
@@ -400,8 +398,8 @@ app.layout = dbc.Container([
                 ),
                 # 0/12 = column not shown on small and medium displays
                 sm=0,
-                # 6/12 = half of screen on large and extra-large displays
-                lg=6,
+                # 3/12 = quarter of screen on large and extra-large displays
+                lg=3,
                 style={'width': '20%'},
                 className="d-flex align-items-right",
             ),
@@ -548,3 +546,4 @@ def get_result_callback(input_values, active_tab, n_clicks):
 server = app.server
 if __name__ == '__main__':
     app.run_server(debug=DASH_DEBUG)
+
