@@ -1,10 +1,8 @@
-# red_wire_app v0.9
-#   Updates from v0.8:
-#       - Update text on Welcome and Results tabs
-#       - Increase width of left side of global page layout
-#       - Update comments accordingly
-#       - Number of Apache threads increased from 10 to 30 (in apache2/sites_available)
-
+# red_wire_app v1.0
+#   Updates from v0.9:
+#       - Limit valid time interval (user input) to 3 months (92 days)
+#       - Fix and improve alerts for invalid user input (start date > end date, time interval > 3 months)
+#       - Edit graph title and messages for user input
 
 #################
 # Import & Load #
@@ -154,7 +152,7 @@ for i in range(0, len(input_ids)):
                     [
                         dbc.InputGroupText(input_labels[i]),
                         dbc.Input(id=input_ids[i], type="date"),
-                        dbc.Alert("Veuillez entrer une valeur.", color="danger", fade=True, is_open=False, id="alert-"+str(i)),
+                        dbc.Alert("Saisissez une plage de temps valide.", color="danger", fade=True, is_open=False, id="alert-"+str(i)),
                     ]
                 )
             ],
@@ -300,7 +298,7 @@ tabs = dbc.Tabs([
             dbc.Form(
                 [
                     html.H5(
-                        "Sélectionnez une date de début et une date de fin de période.",
+                        "Sélectionnez une date de début et une date de fin de période (durée maximum 3 mois).",
                         style={"color": "red"},
                         className="mb-4"),
                 ]
@@ -332,7 +330,7 @@ tabs = dbc.Tabs([
                     dbc.Col(
                         dbc.Card([
                             dbc.CardHeader(
-                                html.H5(f"Comparaison graphique des valeurs de consommation, planification et prédiction"),
+                                html.H5(f"Comparaison graphique des valeurs de consommations réelle, planifiée et prédite"),
                                 style={"color": "red"},
                                 className="text-center pt-3"),
                             dbc.CardBody(dcc.Graph(id="prediction-graph")),
@@ -446,7 +444,6 @@ def button_to_next_tab(active_tab, *args):
 
     # Collect user identification
     State(component_id="name-box", component_property="value"),
-
     State(component_id="tabs", component_property="active_tab"),
 
     Input(component_id="connect-button", component_property="n_clicks"),
@@ -482,10 +479,16 @@ def get_result_callback(input_values, active_tab, n_clicks):
         print("Date de fin :", input_values[1])
 
     # Trigger a warning for blank user input
-    invalid_start = (input_values[0] == None)
-    invalid_end = (input_values[1] == None)
-    if invalid_start or invalid_end:
-        return no_update, no_update, no_update, invalid_start, invalid_end
+    empty_start = (input_values[0] == None)
+    empty_end = (input_values[1] == None)
+    if empty_start or empty_end:
+        return no_update, no_update, empty_start, empty_end
+    # Trigger a warning for invalid time interval
+    else:
+        invalid_time_interval = (input_values[1] < input_values[0]) \
+        or (dt.strptime(input_values[1], '%Y-%m-%d') - dt.strptime(input_values[0], '%Y-%m-%d')).days > 92
+    if invalid_time_interval:
+        return no_update, no_update, False, True
 
     input_values[0]+=" 00:00:00"
     input_values[1]+=" 23:59:59"
