@@ -1,10 +1,13 @@
-# catch-up_data v1.0
+# catch-up_data v1.1
+# Script to catch up REE data from the last collect date up to the current date
+# 	Updates from v1.0:
+# 	- Fix the time lag to be based on current_date instead of dt.now()
 
 '''
-This script is used to catch up REE data from the last collect date up to the current date, if for any reason
-the data collection has been interrupted for a period of time.
+This script catches up REE data from the last collect date up to the current date, if for any reason the data
+collection has been interrupted for a period of time.
 It repeats the treatment of the original daily_update.py script for a range of dates based on the last collect
-date read from the REE_data_aggregated_by_1d.csv file.
+date read from the last line in REE_data_aggregated_by_1d.csv.
 '''
 
 # Import librairies
@@ -42,7 +45,7 @@ collect_date = begin_date
 while collect_date < finish_date:
 
     # Compute lag between UTC and Spain local time for the current day
-    lag = dt.now().astimezone(pytz.timezone('Europe/Madrid')).utcoffset()
+    lag = collect_date.astimezone(pytz.timezone('Europe/Madrid')).utcoffset()
 
     # Set the data collection start and end dates for the current day
     start_date = collect_date+lag
