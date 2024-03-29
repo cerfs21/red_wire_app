@@ -1,8 +1,6 @@
-# red_wire_app v1.1
-#   Updates from v1.0:
-#   - Load data in the interactive part of the code instead of at the time the application is launched, so
-#     that it can be refreshed at the time a prediction is requested
-#   - Add a cache system to store data in memory and refresh it when more recent data is available from disk
+# red_wire_app v1.2
+#   Updates from v1.1:
+#   - Change parent directory of cache directory to /var/www/.cache
 
 
 ##################
@@ -33,7 +31,7 @@ from utils import moment
 #################################
 
 # Dash debug flag
-DASH_DEBUG = False
+DASH_DEBUG = True
 
 # Dash parameters to control displaying tabs and home button
 HIDE_TABS = True
@@ -98,7 +96,7 @@ app.title = 'Red Wire App.'
 # Define and configure a cache system
 cache = Cache(app.server, config={
     'CACHE_TYPE': 'filesystem',
-    'CACHE_DIR': 'cache-directory',
+    'CACHE_DIR': '/var/www/.cache/cache-directory',
 })
 
 # Define a function to load the data using the cache system
