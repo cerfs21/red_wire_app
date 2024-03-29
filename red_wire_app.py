@@ -1,17 +1,18 @@
-# red_wire_app v1.0
-#   Updates from v0.9:
-#       - Limit valid time interval (user input) to 3 months (92 days)
-#       - Fix and improve alerts for invalid user input (start date > end date, time interval > 3 months)
-#       - Edit graph title and messages for user input
+# red_wire_app v1.1
+#   Updates from v1.0:
+#   - Load data in the interactive part of the code instead of at the time the application is launched, so
+#     that it can be refreshed at the time a prediction is requested
+#   - Add a cache system to store data in memory and refresh it when more recent data is available from disk
 
-#################
-# Import & Load #
-#################
+
+##################
+# Import modules #
+##################
 
 # Import Python librairies
 import numpy as np
 import pandas as pd
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 
 import dash
 import dash_bootstrap_components as dbc
@@ -19,30 +20,31 @@ from dash import html, dcc
 from dash.dash import no_update
 from dash_extensions.enrich import Output, DashProxy, Input, State, MultiplexerTransform
 from dash.exceptions import PreventUpdate
+from flask_caching import Cache
 
 from predict import load_model_and_predict, load_data
 from connect import create_session, get_last_connection_date, register_new_connection
 from visualize import make_figure_from_prediction
-
-# Set application path and load data(sub)set
-app_path = '/var/www/red-wire/'
-file_path = 'data/REE_data_aggregated_by_10mn.csv'
-data_df = pd.read_csv(app_path+file_path, delimiter=',')
+from utils import moment
 
 
-#############
-# Set flags #
-#############
+#################################
+# Set flags and other constants #
+#################################
 
 # Dash debug flag
-DASH_DEBUG = True
+DASH_DEBUG = False
 
 # Dash parameters to control displaying tabs and home button
 HIDE_TABS = True
 HIDE_HOME_BUTTON = False
 
 # Flag to control console output
-CONSOLE_OUTPUT = True
+CONSOLE_OUTPUT = False
+
+# Set constants for application and data paths
+APP_PATH = '/var/www/red-wire/'
+DATA_PATH = 'data/REE_data_aggregated_by_10mn.csv'
 
 
 ############################
@@ -66,7 +68,7 @@ input_notes =   ["Saisissez une date au format AAAA-MM-JJ", "Saisissez une date 
 
 # Function to determine greeting text on user connection
 def get_greeting_text(name):
-    session = create_session(app_path)
+    session = create_session(APP_PATH)
     last_date = get_last_connection_date(session, name)
     register_new_connection(session, name)
     session.commit()
@@ -92,6 +94,18 @@ app = DashProxy(
     external_stylesheets=[dbc.themes.BOOTSTRAP],
 )
 app.title = 'Red Wire App.'
+
+# Define and configure a cache system
+cache = Cache(app.server, config={
+    'CACHE_TYPE': 'filesystem',
+    'CACHE_DIR': 'cache-directory',
+})
+
+# Define a function to load the data using the cache system
+@cache.memoize()
+def cached_data():
+    data_df = pd.read_csv(APP_PATH+DATA_PATH, delimiter=',')
+    return data_df
 
 # Application name and logo displayed on top left of all tabs
 logo_and_title = dbc.Row(
@@ -171,9 +185,9 @@ def get_next_tab(active_tab):
         return f"tab-{active_tab_number + 1}"
 
 
-#####################
-# Declare Dash tabs #
-#####################
+#######################
+# Configure Dash tabs #
+#######################
 
 # Define Dash tabs
 tabs = dbc.Tabs([
@@ -473,10 +487,11 @@ def enter_id_callback(name, active_tab, n_clicks):
     Input(component_id="predict-button", component_property="n_clicks")],
 )
 def get_result_callback(input_values, active_tab, n_clicks):
+
     if CONSOLE_OUTPUT:
         print("******************************")
-        print("Date de début :", input_values[0])
-        print("Date de fin :", input_values[1])
+        print("Start date:", input_values[0])
+        print("End date :", input_values[1])
 
     # Trigger a warning for blank user input
     empty_start = (input_values[0] == None)
@@ -489,6 +504,24 @@ def get_result_callback(input_values, active_tab, n_clicks):
         or (dt.strptime(input_values[1], '%Y-%m-%d') - dt.strptime(input_values[0], '%Y-%m-%d')).days > 92
     if invalid_time_interval:
         return no_update, no_update, False, True
+
+    # Load data from cache
+    data_df = cached_data()
+    # Get the most recent date of cached data
+    date_of_cached_data = dt.strptime(data_df.tail(1)['datetime_utc'].values[0], '%Y-%m-%d %H:%M:%S')
+    # Set the date (23:50 UTC everyday) at which most recent data should be available from disk
+    date_of_available_data = moment('yesterday', 'PM') - timedelta(minutes=9)
+    # Data needs to be reloaded if older than the most recent available data
+    reload_needed = date_of_cached_data < date_of_available_data
+    if CONSOLE_OUTPUT:
+        print("Date of cached data:", date_of_cached_data)
+        print("Date of most recent data:", date_of_available_data)
+        print("Reload needed:", reload_needed)
+    if reload_needed:
+        if CONSOLE_OUTPUT:
+            print("Refreshing cache from data file...")
+        cache.delete_memoized(cached_data)
+        data_df = cached_data()
 
     input_values[0]+=" 00:00:00"
     input_values[1]+=" 23:59:59"
@@ -549,4 +582,3 @@ def get_result_callback(input_values, active_tab, n_clicks):
 server = app.server
 if __name__ == '__main__':
     app.run_server(debug=DASH_DEBUG)
-
