@@ -1,6 +1,6 @@
-# red_wire_app v1.2
-#   Updates from v1.1:
-#   - Change parent directory of cache directory to /var/www/.cache
+# red_wire_app v1.3
+#   Updates from v1.2:
+#   - Import constants from utils.py
 
 
 ##################
@@ -20,10 +20,11 @@ from dash_extensions.enrich import Output, DashProxy, Input, State, MultiplexerT
 from dash.exceptions import PreventUpdate
 from flask_caching import Cache
 
+# Import functions and constants
 from predict import load_model_and_predict, load_data
 from connect import create_session, get_last_connection_date, register_new_connection
 from visualize import make_figure_from_prediction
-from utils import moment
+from utils import moment, APP_PATH, DATA_PATH, DATA_REF
 
 
 #################################
@@ -39,10 +40,6 @@ HIDE_HOME_BUTTON = False
 
 # Flag to control console output
 CONSOLE_OUTPUT = False
-
-# Set constants for application and data paths
-APP_PATH = '/var/www/red-wire/'
-DATA_PATH = 'data/REE_data_aggregated_by_10mn.csv'
 
 
 ############################
@@ -66,7 +63,7 @@ input_notes =   ["Saisissez une date au format AAAA-MM-JJ", "Saisissez une date 
 
 # Function to determine greeting text on user connection
 def get_greeting_text(name):
-    session = create_session(APP_PATH)
+    session = create_session()
     last_date = get_last_connection_date(session, name)
     register_new_connection(session, name)
     session.commit()
@@ -102,7 +99,7 @@ cache = Cache(app.server, config={
 # Define a function to load the data using the cache system
 @cache.memoize()
 def cached_data():
-    data_df = pd.read_csv(APP_PATH+DATA_PATH, delimiter=',')
+    data_df = pd.read_csv(APP_PATH+DATA_PATH+DATA_REF, delimiter=',')
     return data_df
 
 # Application name and logo displayed on top left of all tabs

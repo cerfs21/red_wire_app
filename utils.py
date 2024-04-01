@@ -1,7 +1,7 @@
-# utils v1.2
+# utils v1.3
 # Common functions for processing REE data
-#   Updates from v1.1:
-#   - Update comments
+#   Updates from v1.2:
+#   - Add constants for paths and files
 
 
 # Import librairies
@@ -10,11 +10,18 @@ from dateutil import tz
 import pandas as pd
 import pytz
 import requests
+import warnings
+warnings.filterwarnings('ignore')
+warnings.simplefilter('ignore')
 
 # Define constants
 # Define the URL for the targeted data (electricity demand in real time)
 URL = 'https://apidatos.ree.es/es/datos/demanda/demanda-tiempo-real?'
-
+APP_PATH = '/var/www/red-wire/'
+DATA_PATH = '/var/www/red-wire/data_db/'
+USER_PATH = '/var/www/red-wire/user_db/'
+DATA_REF = 'REE_data_aggregated_by_10mn.csv'
+USER_DB = 'user_connect_db.sqlite'
 
 # Define of a function to convert user defined day and half_day to a datetime object
 def moment(day, half_day):

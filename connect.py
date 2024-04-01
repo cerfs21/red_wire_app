@@ -1,16 +1,8 @@
-# connect v0.1:
-#   Initial version for test purposes
+# connect v0.2:
+#   Use constants for path to user database
+#   Move docstring to the top of the file
 
-from datetime import datetime
-
-from sqlalchemy import create_engine, ForeignKey
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
-
-"""
+'''
 2 tables used:
 - 'USERS':
     - ID
@@ -19,7 +11,19 @@ Base = declarative_base()
     - ID
     - Datetime
     - User ID
-"""
+'''
+
+# Import librairies
+from datetime import datetime
+from sqlalchemy import create_engine, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.ext.declarative import declarative_base
+
+# Import constants
+from utils import USER_PATH, USER_DB
+
+Base = declarative_base()
 
 class User(Base):
     __tablename__ = "USERS"
@@ -44,8 +48,8 @@ class Connection(Base):
        return f"Connection({self.user.name} at {self.date})"
 
 
-def create_session(application_path):
-    engine = create_engine(f"sqlite:///{application_path+'data/user_connect_db.sqlite'}", echo=False)
+def create_session():
+    engine = create_engine(f"sqlite:///{USER_PATH+USER_DB}", echo=False)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
