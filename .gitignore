@@ -1,8 +1,4 @@
 __pycache__/
+data_db/
+user_db/
 .python-version
-cache-directory/
-data/user_connect_db.sqlite
-data/REE_data.csv
-data/REE_data_aggregated_by_10mn.csv
-data/REE_data_aggregated_by_1d.csv
-data/REE_data_aggregated_by_1h.csv
